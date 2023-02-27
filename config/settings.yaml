@@ -1,0 +1,4 @@
+default:
+  cfssl: "cfssl"  # Path to the CFSSL library for TLS tests
+  envoy:
+    image: "docker.io/envoyproxy/envoy:v1.25-latest"  # Envoy image that should be deployed

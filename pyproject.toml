@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "marin3r-testsuite"
+version = "0.1.0"
+description = ""
+authors = ["phala <phala@redhat.com>"]
+readme = "README.md"
+packages = [{include = "marin3r_testsuite"}]
+
+[tool.poetry.group.main.dependencies]
+python = "^3.9"
+typing_extensions = "*"
+pytest-xdist = "*"
+pytest = "*"
+pytest-html = "*"
+dynaconf = "*"
+backoff = "*"
+httpx = { version = "*", extras = ["http2"] }
+openshift-client = "*"
+weakget = "*"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "*"
+black = { version = "*", extras = ["d"] }
+
+# Pytest:
+[tool.pytest.ini_options]
+#filterwarnings = [
+#    "ignore: WARNING the new order is not taken into account:UserWarning",
+#    "ignore::urllib3.exceptions.InsecureRequestWarning",
+#    "ignore::cryptography.utils.CryptographyDeprecationWarning"
+#]
+log_format = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
+log_date_format = "%H:%M:%S %z"
+log_level = "INFO"
+junit_logging = "all"
+junit_family = "xunit2"
+asyncio_mode = "auto"
+
+[tool.pylint.FORMAT]
+max-line-length = 120
+disable = [
+    "duplicate-code", # reports false alarms AND can't be disabled locally; pylint issue #214
+    "fixme", # ignore TODOs
+    "redefined-outer-name",
+    "too-many-arguments",
+    "too-many-instance-attributes",
+    "too-few-public-methods"]
+
+[tool.pylint.BASIC]
+good-names=["i","j","k",
+           "logger",
+           "ca"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
