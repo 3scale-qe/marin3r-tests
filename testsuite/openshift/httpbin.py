@@ -24,14 +24,10 @@ class Httpbin(LifecycleObject):
 
     def commit(self):
         with resources.path("testsuite.resources", "httpbin.yaml") as path:
-            self.httpbin_objects = self.openshift.new_app(
-                path, {"NAME": self.name, "LABEL": self.label}
-            )
+            self.httpbin_objects = self.openshift.new_app(path, {"NAME": self.name, "LABEL": self.label})
 
         with self.openshift.context:
-            assert self.openshift.is_ready(
-                self.httpbin_objects.narrow("deployment")
-            ), "Httpbin wasn't ready in time"
+            assert self.openshift.is_ready(self.httpbin_objects.narrow("deployment")), "Httpbin wasn't ready in time"
 
     def delete(self):
         with self.openshift.context:

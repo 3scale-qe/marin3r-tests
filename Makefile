@@ -18,7 +18,7 @@ commit-acceptance: black pylint all-is-package
 pylint:
 	poetry run $@ $(flags) testsuite
 
-black: pipenv-dev
+black:
 	poetry run black --line-length 120 --check testsuite --diff
 
 all-is-package:
@@ -27,7 +27,7 @@ all-is-package:
 	@! find testsuite/ -type d \! -name __pycache__ \! -path 'testsuite/resources/*' \! -exec test -e {}/__init__.py \; -print | grep '^..*$$'
 
 # pattern to run individual testfile or all testfiles in directory
-testsuite/%: FORCE pipenv
+testsuite/%: FORCE
 	$(PYTEST) -v $(flags) $@
 
 test: ## Run test
