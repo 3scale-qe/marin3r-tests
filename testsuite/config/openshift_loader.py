@@ -10,9 +10,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     config = weakget(obj)
     section = config["openshift"]
     client = OpenShiftClient(
-        section["project"] % None,
-        section["api_url"] % None,
-        section["token"] % None,
-        section["kubeconfig_path"] % None
+        section["project"] % None, section["api_url"] % None, section["token"] % None, section["kubeconfig_path"] % None
     )
     obj["openshift"] = client
