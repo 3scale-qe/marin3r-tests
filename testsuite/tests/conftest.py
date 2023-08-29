@@ -2,7 +2,8 @@
 import pytest
 
 from testsuite.config import settings
-from testsuite.openshift.envoy import DiscoveryService, EnvoyConfig, Envoy, SidecarEnvoy
+from testsuite.openshift.envoy import DiscoveryService, Envoy, SidecarEnvoy
+from testsuite.openshift.config import LegacyEnvoyConfig, EnvoyConfig
 from testsuite.openshift.httpbin import Httpbin
 from testsuite.utils import randomize, _whoami, create_simple_cluster
 
@@ -78,8 +79,8 @@ def discovery_service(request, openshift, blame, label):
 @pytest.fixture(scope="module")
 def listeners():
     """Listeners section of EnvoyConfig. Keys are name, value is config"""
-    return {
-        "http": """
+    return [
+        """
 name: http
 address:
     socket_address:
@@ -104,52 +105,69 @@ filter_chains:
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
         """
-    }
+    ]
 
 
 @pytest.fixture(scope="module")
 def clusters(backend):
     """Clusters section of EnvoyConfig. Keys are name, value is config"""
-    return {"httpbin": create_simple_cluster(backend, "httpbin")}
+    return [create_simple_cluster(backend, "httpbin")]
 
 
 @pytest.fixture(scope="module")
 def endpoints():
     """Endpoints section of EnvoyConfig. Keys are name, value is config"""
-    return {}
+    return []
 
 
 @pytest.fixture(scope="module")
 def runtimes():
     """Runtimes section of EnvoyConfig. Keys are name, value is config"""
-    return {}
+    return []
 
 
 @pytest.fixture(scope="module")
 def routes():
     """Routes section of EnvoyConfig. Keys are name, value is config"""
-    return {}
+    return []
 
 
 @pytest.fixture(scope="module")
 def scoped_routes():
     """ScopedRoutes section of EnvoyConfig. Keys are name, value is config"""
-    return {}
+    return []
 
 
 @pytest.fixture(scope="module")
 def secrets():
     """Secrets section of EnvoyConfig. Keys are name, value is secret name"""
-    return {}
+    return []
+
+
+@pytest.fixture(scope="module", params=[LegacyEnvoyConfig, EnvoyConfig])
+def envoy_config_class(request):
+    """Envoy class to use in tests"""
+    return request.param
 
 
 # pylint: disable=unused-argument
 @pytest.fixture(scope="module")
 def envoy_config(
-    request, openshift, blame, listeners, clusters, endpoints, runtimes, routes, scoped_routes, secrets, envoy_class
+    request,
+    openshift,
+    blame,
+    listeners,
+    clusters,
+    endpoints,
+    runtimes,
+    routes,
+    scoped_routes,
+    secrets,
+    envoy_class,
+    envoy_config_class,
 ):
     """EnvoyConfig"""
-    config = EnvoyConfig.create_instance(
+    config = envoy_config_class.create_instance(
         openshift,
         blame("config"),
         listeners,
@@ -178,7 +196,17 @@ def use_tls():
 
 
 @pytest.fixture(scope="module")
-def envoy(request, envoy_class, openshift, envoy_config, discovery_service, blame, testconfig, backend, use_tls):
+def envoy(
+    request,
+    envoy_class,
+    openshift,
+    envoy_config,
+    discovery_service,
+    blame,
+    testconfig,
+    backend,
+    use_tls,
+):
     """Envoy to be used in tests"""
     envoy = envoy_class(
         openshift,

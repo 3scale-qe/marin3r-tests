@@ -30,8 +30,11 @@ log_level = "INFO"
 junit_logging = "all"
 junit_family = "xunit2"
 
+[tool.black]
+line-length = 120
+
 [tool.pylint.FORMAT]
-max-line-length = 120
+max-line-length = 125
 disable = [
     "duplicate-code", # reports false alarms AND can't be disabled locally; pylint issue #214
     "fixme", # ignore TODOs

@@ -5,8 +5,8 @@ import pytest
 @pytest.fixture(scope="module")
 def routes():
     """Routes configuration for httpbin"""
-    return {
-        "local": """
+    return [
+        """
 name: local
 virtual_hosts:
   - name: all
@@ -17,14 +17,14 @@ virtual_hosts:
         route:
             cluster: httpbin
 """
-    }
+    ]
 
 
 @pytest.fixture(scope="module")
 def listeners():
     """Listeners section of EnvoyConfig. Keys are name, value is config"""
-    return {
-        "http": """
+    return [
+        """
 name: http
 address:
     socket_address:
@@ -43,7 +43,7 @@ filter_chains:
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
         """
-    }
+    ]
 
 
 def test_routes(client):

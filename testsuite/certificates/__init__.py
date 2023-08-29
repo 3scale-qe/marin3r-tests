@@ -57,7 +57,11 @@ class CFSSLClient:
         self.binary = binary
 
     def _execute_command(
-        self, command: str, *args: str, stdin: Optional[str] = None, env: Optional[Dict[str, str]] = None
+        self,
+        command: str,
+        *args: str,
+        stdin: Optional[str] = None,
+        env: Optional[Dict[str, str]] = None,
     ):
         args = (self.binary, command, *args)
         try:
@@ -85,7 +89,10 @@ class CFSSLClient:
         return shutil.which(self.binary)
 
     def generate_key(
-        self, common_name: str, names: Optional[List[Dict[str, str]]] = None, hosts: Optional[Collection[str]] = None
+        self,
+        common_name: str,
+        names: Optional[List[Dict[str, str]]] = None,
+        hosts: Optional[Collection[str]] = None,
     ) -> UnsignedKey:
         """Generates unsigned key"""
         data: Dict[str, Any] = {"CN": common_name}
@@ -109,7 +116,10 @@ class CFSSLClient:
             *args,
             "-",
             stdin=key.csr,
-            env={"CA": certificate_authority.certificate, "KEY": certificate_authority.key},
+            env={
+                "CA": certificate_authority.certificate,
+                "KEY": certificate_authority.key,
+            },
         )
         return Certificate(key=key.key, certificate=result["cert"])
 
@@ -121,7 +131,10 @@ class CFSSLClient:
             "-ca-key=env:KEY",
             "-",
             stdin=key.csr,
-            env={"CA": certificate_authority.certificate, "KEY": certificate_authority.key},
+            env={
+                "CA": certificate_authority.certificate,
+                "KEY": certificate_authority.key,
+            },
         )
         return Certificate(key=key.key, certificate=result["cert"])
 

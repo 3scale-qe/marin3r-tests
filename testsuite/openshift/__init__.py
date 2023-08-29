@@ -10,12 +10,14 @@ class LifecycleObject(abc.ABC):
     @abc.abstractmethod
     def commit(self):
         """Commits resource.
-        if there is some reconciliation needed, the method should wait until it is all reconciled"""
+        if there is some reconciliation needed, the method should wait until it is all reconciled
+        """
 
     @abc.abstractmethod
     def delete(self):
         """Removes resource,
-        if there is some reconciliation needed, the method should wait until it is all reconciled"""
+        if there is some reconciliation needed, the method should wait until it is all reconciled
+        """
 
 
 class OpenShiftObject(APIObject):

@@ -11,9 +11,6 @@ from openshift import Context, Selector, OpenShiftPythonException
 
 from testsuite.certificates import Certificate
 
-# from testsuite.openshift.types.routes import Routes
-# from testsuite.openshift.types.secrets import Secrets
-
 
 class ServiceTypes(enum.Enum):
     """Service types enum."""
@@ -30,7 +27,13 @@ class OpenShiftClient:
 
     # pylint: disable=too-many-public-methods
 
-    def __init__(self, project: str, api_url: str = None, token: str = None, kubeconfig_path: str = None):
+    def __init__(
+        self,
+        project: str,
+        api_url: str = None,
+        token: str = None,
+        kubeconfig_path: str = None,
+    ):
         self._project = project
         self._api_url = api_url
         self.token = token
@@ -79,16 +82,6 @@ class OpenShiftClient:
             return False
         return True
 
-    # @cached_property
-    # def routes(self):
-    #     """Return dict-like interface for Routes"""
-    #     return Routes(self)
-    #
-    # @cached_property
-    # def secrets(self):
-    #     """Return dict-like interface for Secrets"""
-    #     return Secrets(self)
-
     def do_action(self, verb: str, *args, auto_raise: bool = True, parse_output: bool = False):
         """Run an oc command."""
         with self.context:
@@ -136,12 +129,12 @@ class OpenShiftClient:
         )
         return success
 
-    # def create(self, model):
-    #     """Creates """
-    #     with self.context:
-    #         return oc.create(model, ["--save-config=true"])
-
-    def create_tls_secret(self, name: str, certificate: Certificate, labels: Optional[Dict[str, str]] = None):
+    def create_tls_secret(
+        self,
+        name: str,
+        certificate: Certificate,
+        labels: Optional[Dict[str, str]] = None,
+    ):
         """Creates a TLS secret"""
         model: Dict = {
             "kind": "Secret",
@@ -149,7 +142,10 @@ class OpenShiftClient:
             "metadata": {
                 "name": name,
             },
-            "stringData": {"tls.crt": certificate.chain or certificate.certificate, "tls.key": certificate.key},
+            "stringData": {
+                "tls.crt": certificate.chain or certificate.certificate,
+                "tls.key": certificate.key,
+            },
             "type": "kubernetes.io/tls",
         }
         if labels is not None:

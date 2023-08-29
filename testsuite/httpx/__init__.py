@@ -29,7 +29,13 @@ class UnexpectedResponse(Exception):
 class HttpxBackoffClient(Client):
     """Httpx client which retries unstable requests"""
 
-    def __init__(self, *, verify: Union[Certificate, bool] = True, cert: Certificate = None, **kwargs):
+    def __init__(
+        self,
+        *,
+        verify: Union[Certificate, bool] = True,
+        cert: Certificate = None,
+        **kwargs,
+    ):
         self.files = []
         self.retry_codes = {503}
         _verify = None

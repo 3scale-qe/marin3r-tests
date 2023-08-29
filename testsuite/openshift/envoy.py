@@ -1,13 +1,11 @@
 """Module containing all classes related to Envoy configured by Marin3r"""
-from enum import Enum
-from functools import cached_property
 
-import yaml
 import openshift as oc
 
 from testsuite.httpx import HttpxBackoffClient
 from testsuite.openshift import OpenShiftObject, LifecycleObject
 from testsuite.openshift.client import OpenShiftClient
+from testsuite.openshift.config import LegacyEnvoyConfig
 from testsuite.openshift.httpbin import Httpbin
 from testsuite.openshift.route import Route
 
@@ -30,82 +28,6 @@ class DiscoveryService(OpenShiftObject):
         return cls(model, context=openshift.context)
 
 
-def convert_to_yaml(data: dict[str, dict]):
-    """Convert dict to specific format Marin3r uses and convert value to yaml if it is not a string"""
-    transformed = []
-    for key, value in data.items():
-        transformed.append({"name": key, "value": value if isinstance(value, str) else yaml.dump(value)})
-    return transformed
-
-
-class EnvoyConfig(OpenShiftObject):
-    """EnvoyConfig resource"""
-
-    # pylint: disable=invalid-name
-    class Status(Enum):
-        """All known statuses of EnvoyConfig"""
-
-        InSync = "InSync"
-        Rollback = "Rollback"
-
-    @classmethod
-    def create_instance(
-        cls,
-        openshift: OpenShiftClient,
-        name,
-        listeners,
-        clusters=None,
-        endpoints=None,
-        runtimes=None,
-        routes=None,
-        scoped_routes=None,
-        secrets=None,
-        labels=None,
-    ):
-        """Creates new EnvoyConfig"""
-        model = {
-            "apiVersion": "marin3r.3scale.net/v1alpha1",
-            "kind": "EnvoyConfig",
-            "metadata": {"name": name},
-            "spec": {
-                "nodeID": name,
-                "serialization": "yaml",
-                "envoyResources": {
-                    "clusters": convert_to_yaml(clusters or {}),
-                    "endpoints": convert_to_yaml(endpoints or {}),
-                    "runtimes": convert_to_yaml(runtimes or {}),
-                    "routes": convert_to_yaml(routes or {}),
-                    "scoped_routes": convert_to_yaml(scoped_routes or {}),
-                    "listeners": convert_to_yaml(listeners),
-                    "secrets": [{"name": value} for value in (secrets or {}).values()],
-                },
-            },
-        }
-
-        if labels is not None:
-            model["metadata"]["labels"] = labels
-
-        return cls(model, context=openshift.context)
-
-    @cached_property
-    def ports(self) -> dict[str, int]:
-        """Returns all the configured ports and their name"""
-        ports = {}
-        for listener in self.model.spec.envoyResources.listeners:
-            ports[listener.name] = yaml.safe_load(listener.value)["address"]["socket_address"]["port_value"]
-        return ports
-
-    def wait_status(self, status: Status, timeout=30):
-        """Waits until config has the expected status"""
-        with oc.timeout(timeout):
-
-            def _status(obj):
-                return obj.model.status.cacheState == status.value
-
-            success, _, _ = self.self_selector().until_all(success_func=_status)
-            return success
-
-
 class EnvoyDeployment(OpenShiftObject):
     """Envoy deployed from template"""
 
@@ -115,7 +37,7 @@ class EnvoyDeployment(OpenShiftObject):
         openshift: OpenShiftClient,
         name,
         discovery_service: DiscoveryService,
-        config: EnvoyConfig,
+        config: LegacyEnvoyConfig,
         image,
         labels=None,
     ):
@@ -155,7 +77,7 @@ class Envoy(LifecycleObject):
         openshift: OpenShiftClient,
         name,
         discovery_service: DiscoveryService,
-        config: EnvoyConfig,
+        config: LegacyEnvoyConfig,
         backend: Httpbin,
         image,
         tls=False,

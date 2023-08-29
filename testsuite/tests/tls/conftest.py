@@ -4,14 +4,22 @@ from typing import Optional
 import pytest
 
 from testsuite.certificates import CertInfo, Certificate, CFSSLClient
+from testsuite.openshift.config import LegacyEnvoyConfig
 from testsuite.utils import cert_builder
 
 
+@pytest.fixture(scope="module", autouse=True)
+def skip_for_legacy(envoy_config_class):
+    """Skip if using old configuration"""
+    if envoy_config_class == LegacyEnvoyConfig:
+        pytest.skip("TLS tests do not work with envoyResources")
+
+
 @pytest.fixture(scope="module")
-def listeners(secrets):
+def listeners(envoy_ca, envoy_cert):
     """Listeners section of EnvoyConfig. Keys are name, value is config"""
-    return {
-        "http": f"""
+    return [
+        f"""
 name: http
 address:
     socket_address:
@@ -25,10 +33,10 @@ filter_chains:
         require_client_certificate: true
         common_tls_context:
             tls_certificate_sds_secret_configs:
-              - name: {secrets["envoy_cert"]}
+              - name: {envoy_cert}
                 sds_config: {{ ads: {{}}, resource_api_version: "V3" }}
             validation_context_sds_secret_config:
-              name: {secrets["envoy_ca"]}
+              name: {envoy_ca}
               sds_config: {{ ads: {{}}, resource_api_version: "V3" }}
     filters:
     - name: envoy.http_connection_manager
@@ -48,15 +56,25 @@ filter_chains:
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
         """
-    }
+    ]
 
 
 @pytest.fixture(scope="module")
-def secrets(create_secret, certificates, blame):
+def envoy_ca(create_secret, certificates, blame):
+    """Envoy Certificate Authority"""
+    return create_secret(certificates["envoy_ca"], blame("envoy-ca"))
+
+
+@pytest.fixture(scope="module")
+def envoy_cert(create_secret, certificates, blame):
+    """Envoy Certificate"""
+    return create_secret(certificates["envoy_cert"], blame("envoy-cert"))
+
+
+@pytest.fixture(scope="module")
+def secrets(envoy_cert, envoy_ca):
     """Define all the secrets used in TLS, specifically CA and envoy cert"""
-    envoy_cert = create_secret(certificates["envoy_cert"], blame("envoy-cert"))
-    envoy_ca = create_secret(certificates["envoy_ca"], blame("envoy-ca"))
-    return {"envoy_cert": envoy_cert, "envoy_ca": envoy_ca}
+    return [(envoy_cert, False), (envoy_ca, True)]
 
 
 @pytest.fixture(scope="session")

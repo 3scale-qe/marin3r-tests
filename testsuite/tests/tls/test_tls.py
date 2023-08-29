@@ -10,8 +10,6 @@ def test_valid_certificate(certificates, envoy):
         assert response.status_code == 200
 
 
-# https://github.com/3scale-ops/marin3r/issues/169
-@pytest.mark.xfail
 def test_no_certificate(envoy, certificates):
     """Test that request without certificate will be rejected"""
     with pytest.raises(ReadError, match="certificate required"):
@@ -19,8 +17,6 @@ def test_no_certificate(envoy, certificates):
             client.get("/get")
 
 
-# https://github.com/3scale-ops/marin3r/issues/169
-@pytest.mark.xfail
 def test_invalid_certificate(certificates, envoy):
     """Tests that certificate with different CA will be rejeceted"""
     with pytest.raises(ReadError, match="unknown ca"):
