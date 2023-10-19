@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["phala <phala@redhat.com>"]
 readme = "README.md"
-packages = [{include = "marin3r_testsuite"}]
+#packages = [{include = "marin3r_testsuite"}]
 
 [tool.poetry.group.main.dependencies]
 python = "^3.11"
