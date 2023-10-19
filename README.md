@@ -52,6 +52,6 @@ The results and reports will be saved in `/test-run-results` in the container.
 ```bash
 podman run \
 	-v $HOME/.kube/config:/run/kubeconfig:z \
-	-e KUADRANT_OPENSHIFT__project=test-project \
+	-e MARIN3R_OPENSHIFT__project=test-project \
 	ghcr.io/3scale-qe/marin3r-tests:latest
 ```
