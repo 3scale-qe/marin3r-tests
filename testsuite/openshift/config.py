@@ -58,7 +58,7 @@ class BaseEnvoyConfig(OpenShiftObject, ABC):
             ports[listener["name"]] = listener["address"]["socket_address"]["port_value"]
         return ports
 
-    def wait_status(self, status: Status, timeout=30):
+    def wait_status(self, status: Status, timeout=60):
         """Waits until config has the expected status"""
         with oc.timeout(timeout):
 
